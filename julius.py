@@ -9,19 +9,16 @@ import requests
 __author__ = "Eduardo Corrêa"
 __email__ = "tavaresdu@gmail.com"
 
-URL = 'https://api.codenation.dev/v1/challenge/dev-ps/generate-data?token='
+URL = 'https://api.codenation.dev/v1/challenge/dev-ps/{}?token={}'
 TOKEN = os.environ['CODENATION_TOKEN']
 FILENAME = 'answer.json'
 
 def main():
-    j = get_json_from_api()
+    j = json.loads(requests.get(URL.format('generate-data', TOKEN)).text)
     j['decifrado'] = decipher_text(j['cifrado'], j['numero_casas'])
     j['resumo_criptografico'] = sha1_hash(j['decifrado'])
     save_json_to_file(j)
-
-def get_json_from_api():
-    response = requests.get(URL + TOKEN)
-    return json.loads(response.text)
+    send_answer()
 
 def decipher_text(ciphered_text, rotation):
     intab = rotate_text(string.ascii_lowercase, rotation)
@@ -42,6 +39,11 @@ def save_json_to_file(json_obj):
     json_str = json.dumps(json_obj)
     with open(FILENAME, 'w') as f:
         f.write(json_str)
+
+def send_answer():
+    files = {'answer': (FILENAME, open(FILENAME, 'rb'), 'multipart/form-data')}
+    response = requests.post(URL.format('submit-solution', TOKEN), files=files)
+    print(response.text)
 
 if __name__ == '__main__':
     main()
