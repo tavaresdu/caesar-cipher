@@ -3,7 +3,6 @@ import os
 import json
 import string
 import hashlib
-from collections import deque
 import requests
 
 __author__ = "Eduardo Corrêa"
